@@ -1,6 +1,6 @@
 import React from 'react';
 
-import headingIcon from '../assets/heading2.png';
+import headingIcon from '../assets/heading.png';
 import { BaseProps } from '../types/BaseProps';
 import { Value } from '../utils/MapboxStyles';
 
