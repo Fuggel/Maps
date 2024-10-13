@@ -22,6 +22,15 @@ FIX ME NO DESCRIPTION
 
 
   
+### headingIconSize
+
+```tsx
+number
+```
+FIX ME NO DESCRIPTION
+
+
+  
 
 
 

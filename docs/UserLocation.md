@@ -120,6 +120,29 @@ Whether location icon is visible
   _defaults to:_ `true`
 [User Location Render Mode](../examples/UserLocation/UserLocationRenderMode)
   
+### headingIconSize
+
+```tsx
+number
+```
+Size of the heading icon
+
+
+  
+### styles
+
+```tsx
+type Styles = {
+  pulse: CircleLayerStyle; /* FIX ME NO DESCRIPTION */
+  background: CircleLayerStyle; /* FIX ME NO DESCRIPTION */
+  foreground: CircleLayerStyle; /* FIX ME NO DESCRIPTION */
+}
+```
+Custom styles for the circle layers
+
+  _defaults to:_ `{  pulse: { circleRadius: 15, circleColor: mapboxBlue },  background: { circleRadius: 9, circleColor: '#fff' },  foreground: { circleRadius: 6, circleColor: mapboxBlue },}`
+
+  
 
 
 
