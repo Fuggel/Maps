@@ -1,10 +1,10 @@
 import React from 'react';
 
-import headingIcon from '../assets/heading.png';
+import headingIcon from '../assets/heading2.png';
 import { BaseProps } from '../types/BaseProps';
 
-import { SymbolLayer } from './SymbolLayer';
 import Images from './Images';
+import { SymbolLayer } from './SymbolLayer';
 
 const style = {
   iconImage: 'userLocationHeading',
@@ -15,9 +15,10 @@ const style = {
 
 type Props = BaseProps & {
   heading?: number;
+  headingIconSize?: number;
 };
 
-const HeadingIndicator = ({ heading }: Props) => {
+const HeadingIndicator = ({ heading, headingIconSize }: Props) => {
   return (
     <React.Fragment key="mapboxUserLocationHeadingIndicatorWrapper">
       <Images
@@ -31,6 +32,7 @@ const HeadingIndicator = ({ heading }: Props) => {
         belowLayerID="mapboxUserLocationWhiteCircle"
         style={{
           iconRotate: heading,
+          iconSize: headingIconSize,
           ...style,
         }}
       />

@@ -1,9 +1,6 @@
 import React, { ReactElement } from 'react';
-
-import locationManager from '../modules/location/locationManager';
-import { type Location } from '../modules/location/locationManager';
 import { CircleLayerStyle } from '../Mapbox';
-
+import locationManager, { type Location } from '../modules/location/locationManager';
 import Annotation from './Annotation';
 import CircleLayer from './CircleLayer';
 import HeadingIndicator from './HeadingIndicator';
@@ -32,28 +29,31 @@ const layerStyles: Record<'normal', Record<string, CircleLayerStyle>> = {
   },
 };
 
+// Modify normalIcon to accept customizable styles
 const normalIcon = (
   showsUserHeadingIndicator?: boolean,
   heading?: number | null,
+  headingIconSize?: number,
+  styles?: Record<string, CircleLayerStyle>,
 ): ReactElement[] => [
   <CircleLayer
     key="mapboxUserLocationPulseCircle"
     id="mapboxUserLocationPulseCircle"
-    style={layerStyles.normal.pulse}
+    style={{ ...layerStyles.normal.pulse, ...styles?.pulse }}
   />,
   <CircleLayer
     key="mapboxUserLocationWhiteCircle"
     id="mapboxUserLocationWhiteCircle"
-    style={layerStyles.normal.background}
+    style={{ ...layerStyles.normal.background, ...styles?.background }}
   />,
   <CircleLayer
     key="mapboxUserLocationBlueCircle"
     id="mapboxUserLocationBlueCircle"
     aboveLayerID="mapboxUserLocationWhiteCircle"
-    style={layerStyles.normal.foreground}
+    style={{ ...layerStyles.normal.foreground, ...styles?.foreground }}
   />,
   ...(showsUserHeadingIndicator && typeof heading === 'number'
-    ? [HeadingIndicator({ heading, key: 'mapboxUserLocationHeadingIndicator' })]
+    ? [HeadingIndicator({ heading, headingIconSize, key: 'mapboxUserLocationHeadingIndicator' })]
     : []),
 ];
 
@@ -63,64 +63,22 @@ export enum UserLocationRenderMode {
 }
 
 type Props = {
-  /**
-   * native/android only render mode
-   *
-   *  - normal: just a circle
-   *  - compass: triangle with heading
-   *  - gps: large arrow
-   *
-   * @platform android
-   */
   androidRenderMode?: 'normal' | 'compass' | 'gps';
-
-  /**
-   * Whether location icon is animated between updates
-   */
   animated?: boolean;
-
-  /**
-   * Custom location icon of type mapbox-gl-native components
-   */
   children?: ReactElement | ReactElement[];
-
-  /**
-   * Minimum amount of movement before GPS location is updated in meters
-   */
   minDisplacement?: number;
-
-  /**
-   * Callback that is triggered on location icon press
-   */
   onPress?: () => void;
-
-  /**
-   * Callback that is triggered on location update
-   */
   onUpdate?: (location: Location) => void;
-
-  /**
-   * @deprecated use LocationPuck component instead of UserLocationRenderMode.Native
-   * Which render mode to use.
-   */
   renderMode?: UserLocationRenderMode;
-
-  /**
-   * Request the always location permission, and listen to the location even when the app is in background
-   *
-   * @platform ios
-   */
   requestsAlwaysUse?: boolean;
-
-  /**
-   * Show or hide small arrow which indicates direction the device is pointing relative to north.
-   */
   showsUserHeadingIndicator?: boolean;
-
-  /**
-   * Whether location icon is visible
-   */
   visible?: boolean;
+  headingIconSize?: number;
+  styles?: {
+    pulse?: CircleLayerStyle;
+    background?: CircleLayerStyle;
+    foreground?: CircleLayerStyle;
+  };
 };
 
 type UserLocationState = {
@@ -137,52 +95,37 @@ class UserLocation extends React.Component<Props, UserLocationState> {
     requestsAlwaysUse: false,
     minDisplacement: 0,
     renderMode: UserLocationRenderMode.Normal,
+    styles: {
+      pulse: { circleRadius: 15, circleColor: mapboxBlue },
+      background: { circleRadius: 9, circleColor: '#fff' },
+      foreground: { circleRadius: 6, circleColor: mapboxBlue },
+    },
   };
 
   constructor(props: Props) {
     super(props);
-
     this.state = {
       shouldShowUserLocation: false,
       coordinates: null,
       heading: null,
     };
-
     this._onLocationUpdate = this._onLocationUpdate.bind(this);
   }
 
-  // required as #setLocationManager attempts to setState
-  // after component unmount
-  _isMounted?: boolean = undefined;
-
-  locationManagerRunning?: boolean = false;
-
   async componentDidMount() {
     this._isMounted = true;
-
     locationManager.setMinDisplacement(this.props.minDisplacement || 0);
-
-    await this.setLocationManager({
-      running: this.needsLocationManagerRunning(),
-    });
-
-    if (this.props.renderMode === UserLocationRenderMode.Native) {
-      return;
-    }
+    await this.setLocationManager({ running: this.needsLocationManagerRunning() });
   }
 
   async componentDidUpdate(prevProps: Props) {
-    await this.setLocationManager({
-      running: this.needsLocationManagerRunning(),
-    });
+    await this.setLocationManager({ running: this.needsLocationManagerRunning() });
 
     if (this.props.minDisplacement !== prevProps.minDisplacement) {
       locationManager.setMinDisplacement(this.props.minDisplacement || 0);
     }
     if (this.props.requestsAlwaysUse !== prevProps.requestsAlwaysUse) {
-      locationManager.setRequestsAlwaysUse(
-        this.props.requestsAlwaysUse || false,
-      );
+      locationManager.setRequestsAlwaysUse(this.props.requestsAlwaysUse || false);
     }
   }
 
@@ -191,16 +134,6 @@ class UserLocation extends React.Component<Props, UserLocationState> {
     await this.setLocationManager({ running: false });
   }
 
-  /**
-   * Whether to start or stop listening to the locationManager
-   *
-   * Notice, that listening will start automatically when
-   * either `onUpdate` or `visible` are set
-   *
-   * @async
-   * @param {Object} running - Object with key `running` and `boolean` value
-   * @return {Promise<void>}
-   */
   async setLocationManager({ running }: { running?: boolean }) {
     if (this.locationManagerRunning !== running) {
       this.locationManagerRunning = running;
@@ -214,17 +147,10 @@ class UserLocation extends React.Component<Props, UserLocationState> {
     }
   }
 
-  /**
-   *
-   * If locationManager should be running
-   *
-   * @return {boolean}
-   */
   needsLocationManagerRunning() {
     return (
       !!this.props.onUpdate ||
-      (this.props.renderMode === UserLocationRenderMode.Normal &&
-        this.props.visible)
+      (this.props.renderMode === UserLocationRenderMode.Normal && this.props.visible)
     );
   }
 
@@ -252,18 +178,18 @@ class UserLocation extends React.Component<Props, UserLocationState> {
   }
 
   _renderNative() {
-    const { androidRenderMode, showsUserHeadingIndicator } = this.props;
-
+    const { androidRenderMode, showsUserHeadingIndicator, styles } = this.props;
     const props = {
       androidRenderMode,
       iosShowsUserHeadingIndicator: showsUserHeadingIndicator,
+      styles,
     };
     return <LocationPuck {...props} />;
   }
 
   render() {
     const { heading, coordinates } = this.state;
-    const { children, visible, showsUserHeadingIndicator, onPress, animated } =
+    const { children, visible, showsUserHeadingIndicator, onPress, animated, headingIconSize, styles } =
       this.props;
 
     if (!visible) {
@@ -286,9 +212,10 @@ class UserLocation extends React.Component<Props, UserLocationState> {
         coordinates={coordinates}
         style={{
           iconRotate: heading,
+          ...styles,
         }}
       >
-        {children || normalIcon(showsUserHeadingIndicator, heading)}
+        {children || normalIcon(showsUserHeadingIndicator, heading, headingIconSize, styles)}
       </Annotation>
     );
   }
