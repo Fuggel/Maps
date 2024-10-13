@@ -123,7 +123,7 @@ Whether location icon is visible
 ### headingIconSize
 
 ```tsx
-number
+Value<number, ['zoom', 'feature']> | undefined
 ```
 Size of the heading icon
 

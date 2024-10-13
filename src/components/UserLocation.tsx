@@ -3,6 +3,7 @@ import React, { ReactElement } from 'react';
 import locationManager from '../modules/location/locationManager';
 import { type Location } from '../modules/location/locationManager';
 import { CircleLayerStyle } from '../Mapbox';
+import { Value } from '../utils/MapboxStyles';
 
 import Annotation from './Annotation';
 import CircleLayer from './CircleLayer';
@@ -35,7 +36,7 @@ const layerStyles: Record<'normal', Record<string, CircleLayerStyle>> = {
 const normalIcon = (
   showsUserHeadingIndicator?: boolean,
   heading?: number | null,
-  headingIconSize?: number,
+  headingIconSize?: Value<number, ['zoom', 'feature']> | undefined,
   styles?: Record<string, CircleLayerStyle>,
 ): ReactElement[] => [
   <CircleLayer
@@ -55,7 +56,13 @@ const normalIcon = (
     style={{ ...layerStyles.normal.foreground, ...styles?.foreground }}
   />,
   ...(showsUserHeadingIndicator && typeof heading === 'number'
-    ? [HeadingIndicator({ heading, headingIconSize, key: 'mapboxUserLocationHeadingIndicator' })]
+    ? [
+        HeadingIndicator({
+          heading,
+          headingIconSize,
+          key: 'mapboxUserLocationHeadingIndicator',
+        }),
+      ]
     : []),
 ];
 
@@ -127,8 +134,8 @@ type Props = {
   /**
    * Size of the heading icon
    */
-  headingIconSize?: number;
-  
+  headingIconSize?: Value<number, ['zoom', 'feature']> | undefined;
+
   /**
    * Custom styles for the circle layers
    */
@@ -285,8 +292,15 @@ class UserLocation extends React.Component<Props, UserLocationState> {
 
   render() {
     const { heading, coordinates } = this.state;
-    const { children, visible, showsUserHeadingIndicator, onPress, animated, headingIconSize, styles } =
-      this.props;
+    const {
+      children,
+      visible,
+      showsUserHeadingIndicator,
+      onPress,
+      animated,
+      headingIconSize,
+      styles,
+    } = this.props;
 
     if (!visible) {
       return null;
@@ -311,7 +325,13 @@ class UserLocation extends React.Component<Props, UserLocationState> {
           ...styles,
         }}
       >
-        {children || normalIcon(showsUserHeadingIndicator, heading, headingIconSize, styles)}
+        {children ||
+          normalIcon(
+            showsUserHeadingIndicator,
+            heading,
+            headingIconSize,
+            styles,
+          )}
       </Annotation>
     );
   }

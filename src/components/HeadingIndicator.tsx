@@ -2,6 +2,7 @@ import React from 'react';
 
 import headingIcon from '../assets/heading2.png';
 import { BaseProps } from '../types/BaseProps';
+import { Value } from '../utils/MapboxStyles';
 
 import Images from './Images';
 import { SymbolLayer } from './SymbolLayer';
@@ -15,7 +16,7 @@ const style = {
 
 type Props = BaseProps & {
   heading?: number;
-  headingIconSize?: number;
+  headingIconSize?: Value<number, ['zoom', 'feature']> | undefined;
 };
 
 const HeadingIndicator = ({ heading, headingIconSize }: Props) => {

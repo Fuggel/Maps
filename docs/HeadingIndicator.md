@@ -25,7 +25,7 @@ FIX ME NO DESCRIPTION
 ### headingIconSize
 
 ```tsx
-number
+Value<number, ['zoom', 'feature']> | undefined
 ```
 FIX ME NO DESCRIPTION
 

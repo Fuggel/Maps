@@ -2072,7 +2072,7 @@
       {
         "name": "headingIconSize",
         "required": false,
-        "type": "number",
+        "type": "Value<number, ['zoom', 'feature']> \\| undefined",
         "default": "none",
         "description": "FIX ME NO DESCRIPTION"
       }
@@ -7636,7 +7636,7 @@
       {
         "name": "headingIconSize",
         "required": false,
-        "type": "number",
+        "type": "Value<number, ['zoom', 'feature']> \\| undefined",
         "default": "none",
         "description": "Size of the heading icon"
       },
